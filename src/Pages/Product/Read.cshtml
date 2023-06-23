@@ -1,0 +1,24 @@
+﻿@page "{id}"
+@using LetsGoPark.WebSite.Services
+@inject JsonFileProductService ProductService
+@model LetsGoPark.WebSite.Pages.Product.ReadModel
+@{
+    ViewData["Title"] = "Read page";
+}
+<div class="class">
+    <h5 class="title, txt-color" id="productTitle">@Model.Product.Title</h5>
+
+    <img class="card-visible" src='@Model.Product.Image' alt='Image for @Model.Product.Title'>
+
+    <p class="card-text, txt-color">@Model.Product.Description</p>
+
+
+</div>
+
+<br />
+<br />
+
+<div class="row">
+    <a asp-page="Update" asp-route-id="@Model.Product.Id" class="btn btn-primary">Update Park</a>
+    <a asp-page="Delete" asp-route-id="@Model.Product.Id" class="btn btn-danger">Delete Park</a>
+</div>

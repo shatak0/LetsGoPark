@@ -1,0 +1,304 @@
+@using LetsGoPark.WebSite.Models
+@using LetsGoPark.WebSite.Services
+@using Microsoft.AspNetCore.Components.Web
+@inject JsonFileProductService ProductService
+@inject NavigationManager NavigationManager
+
+
+<div>
+    <div class="row">
+        <div class="col">
+            <label class="filter-label" for="category">Select a park type to filter by type: </label>
+            <select @onchange="(e) => UpdateFilterType(e.Value.ToString())" id="parkType">
+                <option selected>None</option>
+                @foreach (ProductTypeEnum category in Enum.GetValues(typeof(ProductTypeEnum)))
+                {
+                    <option value=@category>@ProductTypeEnumExtensions.DisplayName(category)</option>
+                }
+            </select>
+            <input id="filter-input" type="text" @onchange="(e) => UpdateFilterText(e.Value.ToString())" value="@FilterDataString" />
+            <button @onclick="(e => EnableFilterData())" class="btn-filter">Search</button>
+            <button @onclick="(e => ClearFilterData())" class="btn-filter">Clear</button>
+        </div>
+    </div>
+</div>
+
+
+
+
+<div class="container-fluid">
+    @{
+        var productList = ProductService.GetAllData();
+ 
+        var productPresent = 0;
+
+
+        if (FilterData)
+        {
+            productList = productList.Where(m => m.Title.ToLower().Contains(FilterDataString.ToLower()));
+        }
+
+        if (!String.IsNullOrEmpty(FilterDataType))
+        {
+            if (!FilterDataType.Equals("None"))
+            {
+                productList = productList.Where(m => m.ProductType.ToLower().Contains(FilterDataType.ToLower()));
+            }
+
+        }
+
+
+        if (FilterData)
+        {
+            productList = productList.Where(m => m.Title.Contains(FilterDataString));
+        }
+
+        if (productList.Any())
+        {
+            productPresent = 1;
+            <hr />
+
+
+            <div class="row">
+                <div class="card-columns">
+                    @foreach (var product in productList)
+                    {
+                        <div class="card">
+                            <div class="card-img" style="background-image: url('@product.Image');">
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">@product.Title</h5>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted">
+                                    <button @onclick="(e => SelectProduct(product.Id))" id="MoreInfoButton_@product.Id" data-toggle="modal" data-target="#productModal" class="btn btn-primary">More Info</button>
+                                </small>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            if (productPresent == 0)
+            {
+                <br />
+                <br />
+                <h2>404 Error</h2>
+                <h4>
+                    The search result yeilded no matching parks!
+                </h4>
+            }
+        }
+    }
+
+
+</div>
+
+@if (selectedProduct != null)
+{
+    <div class="modal fade" id="productModal" tabindex="-1" role="dialog" aria-labelledby="productTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productTitle">@selectedProduct.Title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-img" style="background-image: url('@selectedProduct.Image');">
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">@selectedProduct.Description</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col">
+                                @{
+                                    var voteString = @voteCount + " " + @voteLabel;
+
+                                    if (voteCount == 0)
+                                    {
+                                        voteString = "Be the first to vote!";
+                                    }
+
+                                    <span>@voteString</span>
+
+                                    for (int i = 1; i < 6; i++)
+                                    {
+                                        var currentStar = i;
+                                        var checkedText = "";
+
+                                        if (i <= currentRating)
+                                        {
+                                            checkedText = "checked";
+                                        }
+
+                                        <span class="fa fa-star @checkedText" @onclick="(e => SubmitRating(currentStar))"></span>
+                                    }
+                                }
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col">
+                                @{
+                                    // First show all the existing comments
+                                    foreach (var comment in selectedProduct.CommentList)
+                                    {
+                                        <div class="row">
+                                            <div class="col">
+                                                @comment.Comment
+                                            </div>
+                                        </div>
+                                    }
+
+                                    if (NewComment)
+                                    {
+                                        <div class="row">
+                                            <div class="col">
+                                                <input type="text" @onchange="(e) => UpdateCommentText(e.Value.ToString())" value="@NewCommentText" />
+                                                <button @onclick="(e => AddComment())" class="btn btn-success" data-toggle="modal">Save Comment</button>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    if (NewComment == false)
+                                    {
+                                        <div class="row">
+                                            <div class="col">
+                                                <button @onclick="(e => ShowNewCommentInput())" id="AddComment" class="btn btn-primary">Add Comment</button>
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    @code
+    {
+    ProductModel selectedProduct;
+    string selectedProductId;
+    string FilterDataString = "";
+    bool FilterData = false;
+    string FilterDataType;
+    int currentRating = 0;
+    int voteCount = 0;
+    string voteLabel;
+
+    void SelectProduct(string productId)
+    {
+        selectedProductId = productId;
+        selectedProduct = ProductService.GetAllData().First(x => x.Id == productId);
+        GetCurrentRating();
+    }
+
+
+
+    void GetCurrentRating()
+    {
+        if (selectedProduct.Ratings == null)
+        {
+            currentRating = 0;
+            voteCount = 0;
+        }
+        else
+        {
+            voteCount = selectedProduct.Ratings.Count();
+            voteLabel = voteCount > 1 ? "Votes" : "Vote";
+            currentRating = selectedProduct.Ratings.Sum() / voteCount;
+        }
+
+        System.Console.WriteLine($"Current rating for {selectedProduct.Id}: {currentRating}");
+    }
+
+    void SubmitRating(int rating)
+    {
+        System.Console.WriteLine($"Rating received for {selectedProduct.Id}: {rating}");
+        ProductService.AddRating(selectedProductId, rating);
+        SelectProduct(selectedProductId);
+    }
+
+    bool NewComment = false;
+
+    string NewCommentText = "";
+
+    /// <summary>
+    /// Enable the New Comment Entry by setting the NewComment flag
+    /// </summary>
+    /// <param name="comment"></param>
+    void ShowNewCommentInput()
+    {
+        NewComment = true;
+    }
+
+    /// <summary>
+    /// </summary>
+    /// <param name="newCommentText"></param>
+    void UpdateCommentText(string newCommentText)
+    {
+        NewCommentText = newCommentText;
+    }
+
+    /// <summary>
+    /// Add the comment to the product
+    /// Best to refactor this to be a method to call in the Middle Tier Data service, rathern than putting the logic here...
+    /// </summary>
+    /// <param name="comment"></param>
+    void AddComment()
+    {
+        // Refactor to be a call to the middle tier
+        // ProductService.AddCommentToProduct(selectedProduct, comment);
+
+
+        // Add it to the Comment List
+        selectedProduct.CommentList.Add(new CommentModel() { Comment = NewCommentText });
+
+        // Call for the Product to be saved
+        ProductService.UpdateData(selectedProduct);
+
+        // Set the NewComment flag to false to hide the input box
+        NewComment = false;
+    }
+
+
+
+    void UpdateFilterText(string text)
+    {
+        // set string holding name to text input from user
+        FilterDataString = text;
+    }
+
+    void EnableFilterData()
+    {
+        // If the Filter is enabled, set the filter flag
+        FilterData = true;
+    }
+
+    void ClearFilterData()
+    {
+        // If the Filter is enabled, set the filter flag
+        FilterData = false;
+    }
+    //some additonal comments for the filter type
+    void UpdateFilterType(string category)
+    {
+        FilterDataType = category;
+    }
+}
+}
+
+

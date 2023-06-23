@@ -1,0 +1,62 @@
+﻿@page
+@using LetsGoPark.WebSite.Components
+
+<!--Links our site.css style sheet to the document-->
+<link rel="stylesheet" type="text/css" href="~/css/site.css">
+
+@{
+    //Saves the title of the webpage
+    ViewData["Title"] = "About Us";
+}
+<!--Displays the title of the page-->
+<h1>@ViewData["Title"]</h1>
+
+
+<!--Writes the text of About Us page-->
+<body class="aboutUsAndPrivacyFormat">
+    <!--Displays the mission of our team.-->
+    <section>
+        <h2><strong>Our Mission</strong></h2>
+        <p> <br /> Our Mission is to match Seattle's wonderful parks with people based on their intrests and desired activities.<br /></p>
+    </section>
+    <!--Displays our story.-->
+    <section>
+        <h2><strong>Our Story</strong></h2>
+        <p>
+            <br /> We, being  <strong>parkgoers</strong> went on a journey to find a website that will be perfect for people like us to
+            spend some time with the nature but we couldn't find one. so, we created this awesome website for people like us. <br />
+        </p>
+    </section>
+    <!--Dislplays the members of our team-->
+    <section>
+        <h2><strong>Our Team</strong></h2>
+        <!--Nick's info:-->
+        <div class="content">
+            <div class="details">
+                <div class="name"><br /> McNamara, Nicholas</div>
+                <div class="designation">Graduate student at <strong>SEATTLEU</strong></div>
+            </div>
+        </div>
+        <!--Lei's info:-->
+        <div class="content">
+            <div class="details">
+                <div class="name"><br /> Meng, Lei</div>
+                <div class="designation">Graduate student at <strong>SEATTLEU</strong></div>
+            </div>
+        </div>
+        <!--Shatakshi's info:-->
+        <div class="content">
+            <div class="details">
+                <div class="name"><br /> Puranakar, Shatakshi</div>
+                <div class="designation">Graduate student at <strong>SEATTLEU</strong></div>
+            </div>
+        </div>
+        <!--Ganesh's info-->
+        <div class="content">
+            <div class="details">
+                <div class="name"><br /> Gudibandi, Ganesh Reddy</div>
+                <div class="designation">Graduate student at <strong>SEATTLEU</strong></div>
+            </div>
+        </div>
+    </section>
+</body>

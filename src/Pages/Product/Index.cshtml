@@ -1,0 +1,30 @@
+﻿@page
+@model LetsGoPark.WebSite.Pages.Product.IndexModel
+@{
+    ViewData["Title"] = "Index page";
+}
+
+<div class="container">
+    <!-- button that points to the "Create" page -->
+    <a asp-page="Create" class="btn btn-link">+ Create</a>
+
+    <!-- Product table -->
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in Model.Products)
+            {
+                <tr>
+                    <td>@product.Title</td>
+                    <!-- Link to view product details -->
+                    <td><a asp-page="Read" asp-route-id="@product.Id">Read</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,10 @@
+﻿@page
+@using LetsGoPark.WebSite.Components
+@model IndexModel
+@{
+    ViewData["Title"] = "Index page";
+}
+
+@(await Html.RenderComponentAsync<ProductList>(RenderMode.ServerPrerendered))
+
+<script src="_framework/blazor.server.js"></script>
